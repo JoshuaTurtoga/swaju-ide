@@ -1,0 +1,10 @@
+^C:\USERS\JOSHU\DOCUMENTS\GITHUB\SWAJU-IDE\BUILD\WINDOWS\X64\CMAKEFILES\A43237E0D6CFB9C163D1EBDD0072D608\INSTALL_FORCE.RULE
+setlocal
+cd .
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

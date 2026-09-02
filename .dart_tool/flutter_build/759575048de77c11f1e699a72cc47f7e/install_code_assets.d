@@ -1,0 +1,1 @@
+ C:\\Users\\joshu\\Documents\\GitHub\\swaju-ide\\.dart_tool\\flutter_build\\759575048de77c11f1e699a72cc47f7e\\native_assets.json: 

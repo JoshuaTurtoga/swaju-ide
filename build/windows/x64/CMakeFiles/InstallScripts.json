@@ -1,0 +1,12 @@
+{
+	"InstallScripts" : 
+	[
+		"C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/cmake_install.cmake",
+		"C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/flutter/cmake_install.cmake",
+		"C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/runner/cmake_install.cmake",
+		"C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/plugins/jni/cmake_install.cmake",
+		"C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/plugins/jni/shared/cmake_install.cmake",
+		"C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/plugins/lib_llama_cpp_windows/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

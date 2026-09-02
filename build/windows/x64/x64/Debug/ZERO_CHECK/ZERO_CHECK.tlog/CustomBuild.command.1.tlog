@@ -1,0 +1,10 @@
+^C:\USERS\JOSHU\DOCUMENTS\GITHUB\SWAJU-IDE\BUILD\WINDOWS\X64\CMAKEFILES\A43237E0D6CFB9C163D1EBDD0072D608\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/joshu/Documents/GitHub/swaju-ide/windows -BC:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64 --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/swaju_ide.slnx
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
