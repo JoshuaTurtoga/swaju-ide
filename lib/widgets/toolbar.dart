@@ -1,5 +1,7 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../providers/ide_providers.dart';
 import '../theme/app_theme.dart';
@@ -23,17 +25,20 @@ class Toolbar extends ConsumerWidget {
     final execState = ref.watch(executionStateProvider);
     final isRunning = execState != ExecutionState.idle;
 
-    return Container(
-      height: 48,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: AppTheme.surface,
-        border: Border(
-          bottom: BorderSide(color: AppTheme.panelBorder, width: 1),
-        ),
-      ),
-      child: Row(
-        children: [
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          height: 60,
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          decoration: BoxDecoration(
+            color: AppTheme.glassSurface,
+            border: Border(
+              bottom: BorderSide(color: AppTheme.glassBorder, width: 1),
+            ),
+          ),
+          child: Row(
+            children: [
           // ── App icon / title ──
           Icon(Icons.code_rounded, color: AppTheme.accent, size: 22),
           const SizedBox(width: 8),
@@ -147,23 +152,26 @@ class Toolbar extends ConsumerWidget {
           }),
         ],
       ),
-    );
+    )));
   }
 
   Widget _langIcon(ProgrammingLanguage lang) {
     final iconMap = {
-      ProgrammingLanguage.c: '🇨',
-      ProgrammingLanguage.cpp: '⊕',
-      ProgrammingLanguage.csharp: '#',
-      ProgrammingLanguage.java: '☕',
-      ProgrammingLanguage.python: '🐍',
+      ProgrammingLanguage.c: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/c/c-original.svg',
+      ProgrammingLanguage.cpp: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/cplusplus/cplusplus-original.svg',
+      ProgrammingLanguage.csharp: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/csharp/csharp-original.svg',
+      ProgrammingLanguage.java: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/java/java-original.svg',
+      ProgrammingLanguage.python: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg',
     };
-    return SizedBox(
+    
+    return SvgPicture.network(
+      iconMap[lang]!,
       width: 18,
-      child: Text(
-        iconMap[lang] ?? '?',
-        style: const TextStyle(fontSize: 14),
-        textAlign: TextAlign.center,
+      height: 18,
+      placeholderBuilder: (context) => const SizedBox(
+        width: 18,
+        height: 18,
+        child: CircularProgressIndicator(strokeWidth: 2),
       ),
     );
   }

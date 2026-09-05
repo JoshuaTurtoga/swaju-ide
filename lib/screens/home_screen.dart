@@ -13,7 +13,6 @@ import '../providers/ide_providers.dart';
 import '../services/ai_service.dart';
 import '../services/execution_service.dart';
 import '../theme/app_theme.dart';
-import '../widgets/file_tree.dart';
 import '../widgets/terminal_panel.dart';
 import '../widgets/toolbar.dart';
 
@@ -110,6 +109,8 @@ public class Main {
 
   /// Run the code currently in the editor.
   Future<void> _runCode() async {
+    if (ref.read(executionStateProvider) != ExecutionState.idle) return;
+
     final language = ref.read(selectedLanguageProvider);
     final code = _editorController.text;
     final executionService = ref.read(executionServiceProvider);
@@ -189,18 +190,11 @@ public class Main {
 
               // ── Main content area ──
               Expanded(
-                child: Row(
+                child: Column(
                   children: [
-                    // ── Left: File tree ──
-                    const FileTree(),
-
-                    // ── Right: Editor + Terminal (vertical split) ──
+                    // ── Code editor ──
                     Expanded(
-                      child: Column(
-                        children: [
-                          // ── Code editor ──
-                          Expanded(
-                            flex: 3,
+                      flex: 3,
                             child: Container(
                               color: AppTheme.editorBackground,
                               child: CodeEditor(
@@ -251,9 +245,6 @@ public class Main {
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
 
               // ── Status bar ──
               _StatusBar(language: selectedLang),

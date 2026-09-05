@@ -16,6 +16,7 @@ dependencies:
   path_provider: ^2.1.5
   lib_llama_cpp: ^0.7.3
   google_fonts: ^6.2.1
+  flutter_svg: ^2.3.0
 
 dev_dependencies:
   flutter_test:

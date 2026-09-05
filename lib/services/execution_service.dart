@@ -25,12 +25,12 @@ class _LangConfig {
 final _langConfigs = <ProgrammingLanguage, _LangConfig>{
   ProgrammingLanguage.c: const _LangConfig(
     extension: 'c',
-    compileCmd: ['gcc', '{file}', '-o', '{out}', '-mwindows'],
+    compileCmd: ['gcc', '{file}', '-o', '{out}'],
     runCmd: ['{out}'],
   ),
   ProgrammingLanguage.cpp: const _LangConfig(
     extension: 'cpp',
-    compileCmd: ['g++', '{file}', '-o', '{out}', '-mwindows'],
+    compileCmd: ['g++', '{file}', '-o', '{out}'],
     runCmd: ['{out}'],
   ),
   ProgrammingLanguage.csharp: const _LangConfig(
@@ -69,7 +69,7 @@ extern "C" {
 #include <stdio.h>
 #endif
 void _swaju_unbuf(void) __attribute__((constructor));
-void _swaju_unbuf(void) { setvbuf(stdout,0,4,0); setvbuf(stderr,0,4,0); }
+void _swaju_unbuf(void) { setvbuf(stdout,0,4,0); }
 #ifdef __cplusplus
 }
 #endif
@@ -174,9 +174,7 @@ class ExecutionService {
           ? '$currentClassName.${config.extension}'
           : 'main.${config.extension}';
 
-      if (language == ProgrammingLanguage.c || language == ProgrammingLanguage.cpp) {
-        code += _cUnbufferSnippet;
-      } else if (language == ProgrammingLanguage.csharp) {
+      if (language == ProgrammingLanguage.csharp) {
         // Console.ReadKey crashes when stdin is redirected (as it is in our IDE).
         // We transparently patch it to Console.Read() so user code runs smoothly.
         code = code.replaceAll('Console.ReadKey', 'Console.Read');

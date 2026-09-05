@@ -1,4 +1,5 @@
-                    import 'package:flutter/material.dart';
+                    import 'dart:ui';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -94,18 +95,21 @@ class _TerminalPanelState extends ConsumerState<TerminalPanel> {
       child: Column(
         children: [
           // ── Terminal header bar ──
-          Container(
-            height: 30,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
-              color: AppTheme.surface,
-              border: Border(
-                bottom: BorderSide(color: AppTheme.panelBorder, width: 1),
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.terminal_rounded, size: 14, color: AppTheme.textMuted),
+          ClipRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                height: 36,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: AppTheme.glassSurface,
+                  border: Border(
+                    bottom: BorderSide(color: AppTheme.glassBorder, width: 1),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.terminal_rounded, size: 16, color: AppTheme.accent),
                 const SizedBox(width: 6),
                 Text('OUTPUT', style: AppTheme.uiLabel),
                 const Spacer(),
@@ -157,8 +161,9 @@ class _TerminalPanelState extends ConsumerState<TerminalPanel> {
               ],
             ),
           ),
-
-          // ── Terminal content and input ──
+        ),
+      ),
+      // ── Terminal content and input ──
           Expanded(
             child: lines.isEmpty && ref.watch(executionStateProvider) != ExecutionState.running
                 ? Center(

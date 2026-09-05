@@ -9,25 +9,30 @@ class AppTheme {
   AppTheme._();
 
   // ─── Core palette ───────────────────────────────────────────────
-  static const Color background = Color(0xFF1E1E2E);
-  static const Color surface = Color(0xFF252536);
-  static const Color surfaceVariant = Color(0xFF2D2D44);
-  static const Color panelBorder = Color(0xFF3B3B54);
-  static const Color accent = Color(0xFF7C3AED);      // vibrant purple
-  static const Color accentLight = Color(0xFF9F67FF);
-  static const Color success = Color(0xFF22C55E);
-  static const Color error = Color(0xFFEF4444);
-  static const Color warning = Color(0xFFF59E0B);
-  static const Color info = Color(0xFF06B6D4);         // cyan – used for AI output
-  static const Color textPrimary = Color(0xFFE2E8F0);
-  static const Color textSecondary = Color(0xFF94A3B8);
-  static const Color textMuted = Color(0xFF64748B);
+  static const Color background = Color(0xFF0D0D14); // Ultra-deep space black/blue
+  static const Color surface = Color(0xFF161622);    // Slightly elevated surface
+  static const Color surfaceVariant = Color(0xFF1C1C2A); // Hover states and active items
+  static const Color panelBorder = Color(0xFF26263B);
+  static const Color accent = Color(0xFF00E5FF);     // Vibrant cyan/neon blue
+  static const Color accentLight = Color(0xFF66EDFF);
+  static const Color success = Color(0xFF00FF87);    // Neon green
+  static const Color error = Color(0xFFFF2A5F);      // Vibrant pink/red
+  static const Color warning = Color(0xFFFFB000);
+  static const Color info = Color(0xFF9D4EDD);       // Deep purple
+  
+  static const Color textPrimary = Color(0xFFF1F5F9);
+  static const Color textSecondary = Color(0xFFA1A1AA);
+  static const Color textMuted = Color(0xFF52525B);
 
   // ─── Editor-specific colours ────────────────────────────────────
-  static const Color editorBackground = Color(0xFF1A1A2E);
-  static const Color editorLineHighlight = Color(0xFF2A2A3E);
-  static const Color editorLineNumber = Color(0xFF64748B);
-  static const Color terminalBackground = Color(0xFF0F0F1A);
+  static const Color editorBackground = Color(0xFF09090E); // Darkest shade for focus
+  static const Color editorLineHighlight = Color(0xFF13131D);
+  static const Color editorLineNumber = Color(0xFF47475A);
+  static const Color terminalBackground = Color(0xFF0A0A10);
+  
+  // ─── Glassmorphism Helpers ──────────────────────────────────────
+  static Color get glassSurface => surface.withValues(alpha: 0.7);
+  static Color get glassBorder => Colors.white.withValues(alpha: 0.05);
 
   // ─── Text styles ────────────────────────────────────────────────
   static TextStyle get monoStyle => GoogleFonts.jetBrainsMono(
