@@ -7,6 +7,7 @@ import 'package:re_highlight/languages/cpp.dart';
 import 'package:re_highlight/languages/csharp.dart';
 import 'package:re_highlight/languages/java.dart';
 import 'package:re_highlight/languages/python.dart';
+import 'package:re_highlight/styles/github.dart';
 import 'package:re_highlight/styles/atom-one-dark.dart';
 
 import '../providers/ide_providers.dart';
@@ -15,6 +16,7 @@ import '../services/execution_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/terminal_panel.dart';
 import '../widgets/toolbar.dart';
+import '../widgets/vertical_split_view.dart';
 
 /// Main IDE screen — 4 panel layout.
 ///
@@ -142,7 +144,7 @@ public class Main {
   }
 
   /// Returns the re_highlight language mode for the selected language.
-  CodeHighlightTheme? _getHighlightTheme(ProgrammingLanguage lang) {
+  CodeHighlightTheme? _getHighlightTheme(ProgrammingLanguage lang, AppTheme theme) {
     final modeMap = {
       ProgrammingLanguage.c: langC,
       ProgrammingLanguage.cpp: langCpp,
@@ -158,12 +160,13 @@ public class Main {
       languages: {
         lang.extension: CodeHighlightThemeMode(mode: mode),
       },
-      theme: atomOneDarkTheme,
+      theme: theme.brightness == Brightness.dark ? atomOneDarkTheme : githubTheme,
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = AppTheme.fromType(ref.watch(themeProvider));
     final selectedLang = ref.watch(selectedLanguageProvider);
     final isRunning = ref.watch(executionStateProvider) != ExecutionState.idle;
 
@@ -182,7 +185,7 @@ public class Main {
       child: FocusScope(
         autofocus: true,
         child: Scaffold(
-          backgroundColor: AppTheme.background,
+          backgroundColor: theme.background,
           body: Column(
             children: [
               // ── Top toolbar ──
@@ -190,61 +193,51 @@ public class Main {
 
               // ── Main content area ──
               Expanded(
-                child: Column(
-                  children: [
-                    // ── Code editor ──
-                    Expanded(
-                      flex: 3,
-                            child: Container(
-                              color: AppTheme.editorBackground,
-                              child: CodeEditor(
-                                controller: _editorController,
-                                style: CodeEditorStyle(
-                                  fontSize: 14,
-                                  fontFamily: 'JetBrains Mono',
-                                  codeTheme: _getHighlightTheme(selectedLang),
-                                  backgroundColor: AppTheme.editorBackground,
-                                  textColor: AppTheme.textPrimary,
-                                  cursorColor: AppTheme.accent,
-                                  selectionColor:
-                                      AppTheme.accent.withValues(alpha: 0.25),
-                                  cursorLineColor: AppTheme.editorLineHighlight,
-                                ),
-                                indicatorBuilder: (
-                                  context,
-                                  editingController,
-                                  chunkController,
-                                  notifier,
-                                ) {
-                                  return Row(
-                                    children: [
-                                      DefaultCodeLineNumber(
-                                        controller: editingController,
-                                        notifier: notifier,
-                                        textStyle: AppTheme.monoSmall.copyWith(
-                                          color: AppTheme.editorLineNumber,
-                                        ),
-                                      ),
-                                      DefaultCodeChunkIndicator(
-                                        width: 20,
-                                        controller: chunkController,
-                                        notifier: notifier,
-                                      ),
-                                    ],
-                                  );
-                                },
+                child: VerticalSplitView(
+                  top: Container(
+                    margin: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+                    decoration: theme.neumorphicInner(radius: 12),
+                    clipBehavior: Clip.antiAlias,
+                    child: CodeEditor(
+                      controller: _editorController,
+                      style: CodeEditorStyle(
+                        fontSize: 14,
+                        fontFamily: 'JetBrains Mono',
+                        codeTheme: _getHighlightTheme(selectedLang, theme),
+                        backgroundColor: theme.editorBackground,
+                        textColor: theme.textPrimary,
+                        cursorColor: theme.accent,
+                        selectionColor: theme.accent.withValues(alpha: 0.25),
+                        cursorLineColor: theme.editorLineHighlight,
+                      ),
+                      indicatorBuilder: (
+                        context,
+                        editingController,
+                        chunkController,
+                        notifier,
+                      ) {
+                        return Row(
+                          children: [
+                            DefaultCodeLineNumber(
+                              controller: editingController,
+                              notifier: notifier,
+                              textStyle: theme.monoSmall.copyWith(
+                                color: theme.editorLineNumber,
                               ),
                             ),
-                          ),
-
-                          // ── Terminal output ──
-                          const Expanded(
-                            flex: 2,
-                            child: TerminalPanel(),
-                          ),
-                        ],
-                      ),
+                            DefaultCodeChunkIndicator(
+                              width: 20,
+                              controller: chunkController,
+                              notifier: notifier,
+                            ),
+                          ],
+                        );
+                      },
                     ),
+                  ),
+                  bottom: const TerminalPanel(),
+                ),
+              ),
 
               // ── Status bar ──
               _StatusBar(language: selectedLang),
@@ -257,43 +250,44 @@ public class Main {
 }
 
 // ─── Status bar ──────────────────────────────────────────────────────────────
-class _StatusBar extends StatelessWidget {
+class _StatusBar extends ConsumerWidget {
   final ProgrammingLanguage language;
   const _StatusBar({required this.language});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = AppTheme.fromType(ref.watch(themeProvider));
     return Container(
       height: 24,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: AppTheme.accent.withValues(alpha: 0.15),
+        color: theme.accent.withValues(alpha: 0.15),
         border: Border(
-          top: BorderSide(color: AppTheme.panelBorder, width: 1),
+          top: BorderSide(color: theme.panelBorder, width: 1),
         ),
       ),
       child: Row(
         children: [
           Text(
             language.displayName,
-            style: AppTheme.uiLabel.copyWith(
-              color: AppTheme.textSecondary,
+            style: theme.uiLabel.copyWith(
+              color: theme.textSecondary,
               fontSize: 11,
             ),
           ),
           const Spacer(),
           Text(
             'UTF-8',
-            style: AppTheme.uiLabel.copyWith(
-              color: AppTheme.textMuted,
+            style: theme.uiLabel.copyWith(
+              color: theme.textMuted,
               fontSize: 11,
             ),
           ),
           const SizedBox(width: 16),
           Text(
             'Swaju IDE v1.0.0',
-            style: AppTheme.uiLabel.copyWith(
-              color: AppTheme.textMuted,
+            style: theme.uiLabel.copyWith(
+              color: theme.textMuted,
               fontSize: 11,
             ),
           ),
@@ -302,3 +296,4 @@ class _StatusBar extends StatelessWidget {
     );
   }
 }
+

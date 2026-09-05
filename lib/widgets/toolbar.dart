@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../providers/ide_providers.dart';
 import '../theme/app_theme.dart';
+import 'custom_dropdown.dart';
 
 /// Top toolbar for the IDE.
 ///
@@ -21,75 +22,57 @@ class Toolbar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final themeType = ref.watch(themeProvider);
+    final theme = AppTheme.fromType(themeType);
     final selectedLang = ref.watch(selectedLanguageProvider);
     final execState = ref.watch(executionStateProvider);
     final isRunning = execState != ExecutionState.idle;
 
-    return ClipRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          height: 60,
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          decoration: BoxDecoration(
-            color: AppTheme.glassSurface,
-            border: Border(
-              bottom: BorderSide(color: AppTheme.glassBorder, width: 1),
-            ),
-          ),
-          child: Row(
-            children: [
+    return Container(
+      height: 64,
+      margin: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: theme.neumorphicOuter(),
+      child: Row(
+        children: [
           // ── App icon / title ──
-          Icon(Icons.code_rounded, color: AppTheme.accent, size: 22),
+          Icon(Icons.code_rounded, color: theme.accent, size: 22),
           const SizedBox(width: 8),
           Text(
             'Swaju IDE',
-            style: AppTheme.uiText.copyWith(
+            style: theme.uiText.copyWith(
               fontWeight: FontWeight.w700,
               fontSize: 14,
-              color: AppTheme.textPrimary,
+              color: theme.textPrimary,
             ),
           ),
           const SizedBox(width: 24),
 
           // ── Language dropdown ──
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppTheme.surfaceVariant,
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: AppTheme.panelBorder),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<ProgrammingLanguage>(
-                value: selectedLang,
-                dropdownColor: AppTheme.surfaceVariant,
-                style: AppTheme.uiText.copyWith(fontSize: 13),
-                icon: Icon(
-                  Icons.expand_more_rounded,
-                  color: AppTheme.textSecondary,
-                  size: 18,
-                ),
-                items: ProgrammingLanguage.values.map((lang) {
-                  return DropdownMenuItem(
-                    value: lang,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _langIcon(lang),
-                        const SizedBox(width: 8),
-                        Text(lang.displayName),
-                      ],
+          CustomDropdown<ProgrammingLanguage>(
+            theme: theme,
+            value: selectedLang,
+            items: ProgrammingLanguage.values.map((lang) {
+              return CustomDropdownItem(
+                value: lang,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _langIcon(lang),
+                    const SizedBox(width: 8),
+                    Text(
+                      lang.displayName,
+                      style: theme.uiText.copyWith(fontSize: 13),
                     ),
-                  );
-                }).toList(),
-                onChanged: (lang) {
-                  if (lang != null) {
-                    ref.read(selectedLanguageProvider.notifier).state = lang;
-                  }
-                },
-              ),
-            ),
+                  ],
+                ),
+              );
+            }).toList(),
+            onChanged: (lang) {
+              if (lang != null) {
+                ref.read(selectedLanguageProvider.notifier).state = lang;
+              }
+            },
           ),
 
           const SizedBox(width: 16),
@@ -98,7 +81,7 @@ class Toolbar extends ConsumerWidget {
           _ToolbarButton(
             icon: Icons.play_arrow_rounded,
             label: 'Run',
-            color: AppTheme.success,
+            color: theme.success,
             onPressed: isRunning ? null : onRun,
             tooltip: 'Compile & Run (F5)',
           ),
@@ -109,7 +92,7 @@ class Toolbar extends ConsumerWidget {
           _ToolbarButton(
             icon: Icons.stop_rounded,
             label: 'Kill',
-            color: AppTheme.error,
+            color: theme.error,
             onPressed: isRunning ? onKill : null,
             tooltip: 'Kill running process (F6)',
           ),
@@ -119,10 +102,33 @@ class Toolbar extends ConsumerWidget {
           // ── Status indicator ──
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 200),
-            child: _statusChip(execState),
+            child: _statusChip(execState, theme),
           ),
 
           const Spacer(),
+
+          // ── Theme dropdown ──
+          CustomDropdown<AppThemeType>(
+            theme: theme,
+            value: themeType,
+            items: AppThemeType.values.map((type) {
+              return CustomDropdownItem(
+                value: type,
+                selectedChild: Icon(Icons.palette_rounded, color: theme.textSecondary, size: 16),
+                child: Text(
+                  type.displayName,
+                  style: theme.uiText.copyWith(fontSize: 13),
+                ),
+              );
+            }).toList(),
+            onChanged: (type) {
+              if (type != null) {
+                ref.read(themeProvider.notifier).state = type;
+              }
+            },
+          ),
+          
+          const SizedBox(width: 16),
 
           // ── AI status ──
           Consumer(builder: (context, ref, _) {
@@ -137,13 +143,13 @@ class Toolbar extends ConsumerWidget {
                   Icon(
                     Icons.smart_toy_outlined,
                     size: 16,
-                    color: aiLoaded ? AppTheme.info : AppTheme.textMuted,
+                    color: aiLoaded ? theme.info : theme.textMuted,
                   ),
                   const SizedBox(width: 4),
                   Text(
                     'AI',
-                    style: AppTheme.uiTextSmall.copyWith(
-                      color: aiLoaded ? AppTheme.info : AppTheme.textMuted,
+                    style: theme.uiTextSmall.copyWith(
+                      color: aiLoaded ? theme.info : theme.textMuted,
                     ),
                   ),
                 ],
@@ -152,7 +158,7 @@ class Toolbar extends ConsumerWidget {
           }),
         ],
       ),
-    )));
+    );
   }
 
   Widget _langIcon(ProgrammingLanguage lang) {
@@ -176,7 +182,7 @@ class Toolbar extends ConsumerWidget {
     );
   }
 
-  Widget _statusChip(ExecutionState state) {
+  Widget _statusChip(ExecutionState state, AppTheme theme) {
     switch (state) {
       case ExecutionState.idle:
         return Row(
@@ -188,11 +194,11 @@ class Toolbar extends ConsumerWidget {
               height: 8,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppTheme.textMuted,
+                color: theme.textMuted,
               ),
             ),
             const SizedBox(width: 6),
-            Text('Ready', style: AppTheme.uiTextSmall),
+            Text('Ready', style: theme.uiTextSmall),
           ],
         );
       case ExecutionState.compiling:
@@ -205,13 +211,13 @@ class Toolbar extends ConsumerWidget {
               height: 12,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                color: AppTheme.warning,
+                color: theme.warning,
               ),
             ),
             const SizedBox(width: 6),
             Text(
               'Compiling…',
-              style: AppTheme.uiTextSmall.copyWith(color: AppTheme.warning),
+              style: theme.uiTextSmall.copyWith(color: theme.warning),
             ),
           ],
         );
@@ -225,13 +231,13 @@ class Toolbar extends ConsumerWidget {
               height: 12,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                color: AppTheme.success,
+                color: theme.success,
               ),
             ),
             const SizedBox(width: 6),
             Text(
               'Running…',
-              style: AppTheme.uiTextSmall.copyWith(color: AppTheme.success),
+              style: theme.uiTextSmall.copyWith(color: theme.success),
             ),
           ],
         );
@@ -261,9 +267,11 @@ class _ToolbarButton extends StatefulWidget {
 
 class _ToolbarButtonState extends State<_ToolbarButton> {
   bool _hovered = false;
+  bool _pressed = false;
 
   @override
   Widget build(BuildContext context) {
+    final theme = AppTheme.fromType(ProviderScope.containerOf(context).read(themeProvider));
     final enabled = widget.onPressed != null;
     final color = enabled ? widget.color : widget.color.withValues(alpha: 0.3);
 
@@ -271,31 +279,30 @@ class _ToolbarButtonState extends State<_ToolbarButton> {
       message: widget.tooltip,
       child: MouseRegion(
         onEnter: (_) => setState(() => _hovered = true),
-        onExit: (_) => setState(() => _hovered = false),
+        onExit: (_) => setState(() {
+          _hovered = false;
+          _pressed = false;
+        }),
         cursor: enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
         child: GestureDetector(
+          onTapDown: (_) => enabled ? setState(() => _pressed = true) : null,
+          onTapUp: (_) => enabled ? setState(() => _pressed = false) : null,
+          onTapCancel: () => enabled ? setState(() => _pressed = false) : null,
           onTap: widget.onPressed,
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: _hovered && enabled
-                  ? color.withValues(alpha: 0.15)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(
-                color: _hovered && enabled ? color : Colors.transparent,
-                width: 1,
-              ),
-            ),
+            duration: const Duration(milliseconds: 100),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: _pressed
+                ? theme.neumorphicInner(radius: 8)
+                : theme.neumorphicOuter(radius: 8),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(widget.icon, size: 18, color: color),
-                const SizedBox(width: 4),
+                const SizedBox(width: 6),
                 Text(
                   widget.label,
-                  style: AppTheme.uiText.copyWith(
+                  style: theme.uiText.copyWith(
                     color: color,
                     fontWeight: FontWeight.w600,
                     fontSize: 12,
@@ -309,3 +316,4 @@ class _ToolbarButtonState extends State<_ToolbarButton> {
     );
   }
 }
+

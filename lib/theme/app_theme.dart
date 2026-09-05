@@ -1,63 +1,233 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Centralised IDE theme — VS Code-inspired dark palette.
-///
-/// All colours, text styles, and component themes live here so they can be
-/// referenced from any widget without scattering magic values.
+enum AppThemeType {
+  neumorphismWhite,
+  darkSlate,
+  gray,
+}
+
+extension AppThemeTypeExtension on AppThemeType {
+  String get displayName {
+    switch (this) {
+      case AppThemeType.neumorphismWhite:
+        return 'White';
+      case AppThemeType.darkSlate:
+        return 'Dark';
+      case AppThemeType.gray:
+        return 'Gray';
+    }
+  }
+}
+
+/// Centralised IDE theme that provides colours and neumorphic box decorations.
 class AppTheme {
-  AppTheme._();
+  final AppThemeType type;
+  final Brightness brightness;
 
-  // ─── Core palette ───────────────────────────────────────────────
-  static const Color background = Color(0xFF0D0D14); // Ultra-deep space black/blue
-  static const Color surface = Color(0xFF161622);    // Slightly elevated surface
-  static const Color surfaceVariant = Color(0xFF1C1C2A); // Hover states and active items
-  static const Color panelBorder = Color(0xFF26263B);
-  static const Color accent = Color(0xFF00E5FF);     // Vibrant cyan/neon blue
-  static const Color accentLight = Color(0xFF66EDFF);
-  static const Color success = Color(0xFF00FF87);    // Neon green
-  static const Color error = Color(0xFFFF2A5F);      // Vibrant pink/red
-  static const Color warning = Color(0xFFFFB000);
-  static const Color info = Color(0xFF9D4EDD);       // Deep purple
-  
-  static const Color textPrimary = Color(0xFFF1F5F9);
-  static const Color textSecondary = Color(0xFFA1A1AA);
-  static const Color textMuted = Color(0xFF52525B);
+  final Color background;
+  final Color surface;
+  final Color surfaceVariant;
+  final Color panelBorder;
+  final Color accent;
+  final Color accentLight;
+  final Color success;
+  final Color error;
+  final Color warning;
+  final Color info;
 
-  // ─── Editor-specific colours ────────────────────────────────────
-  static const Color editorBackground = Color(0xFF09090E); // Darkest shade for focus
-  static const Color editorLineHighlight = Color(0xFF13131D);
-  static const Color editorLineNumber = Color(0xFF47475A);
-  static const Color terminalBackground = Color(0xFF0A0A10);
+  final Color textPrimary;
+  final Color textSecondary;
+  final Color textMuted;
+
+  final Color editorBackground;
+  final Color editorLineHighlight;
+  final Color editorLineNumber;
+  final Color terminalBackground;
+
+  final Color outerShadowDark;
+  final Color outerShadowLight;
+  final Color innerShadowDark;
+
+  const AppTheme({
+    required this.type,
+    required this.brightness,
+    required this.background,
+    required this.surface,
+    required this.surfaceVariant,
+    required this.panelBorder,
+    required this.accent,
+    required this.accentLight,
+    required this.success,
+    required this.error,
+    required this.warning,
+    required this.info,
+    required this.textPrimary,
+    required this.textSecondary,
+    required this.textMuted,
+    required this.editorBackground,
+    required this.editorLineHighlight,
+    required this.editorLineNumber,
+    required this.terminalBackground,
+    required this.outerShadowDark,
+    required this.outerShadowLight,
+    required this.innerShadowDark,
+  });
+
+  // ─── Theme Factories ──────────────────────────────────────────────
+
+  static AppTheme neumorphismWhite() {
+    return const AppTheme(
+      type: AppThemeType.neumorphismWhite,
+      brightness: Brightness.light,
+      background: Color(0xFFE0E5EC),
+      surface: Color(0xFFE0E5EC),
+      surfaceVariant: Color(0xFFD1D9E6),
+      panelBorder: Color(0xFFC0C9DB),
+      accent: Color(0xFF5C6BC0),
+      accentLight: Color(0xFF7986CB),
+      success: Color(0xFF4CAF50),
+      error: Color(0xFFF44336),
+      warning: Color(0xFFFF9800),
+      info: Color(0xFF03A9F4),
+      textPrimary: Color(0xFF4A4A5A),
+      textSecondary: Color(0xFF7A7A8A),
+      textMuted: Color(0xFFA0A0B0),
+      editorBackground: Color(0xFFE0E5EC),
+      editorLineHighlight: Color(0xFFD1D9E6),
+      editorLineNumber: Color(0xFFA0A0B0),
+      terminalBackground: Color(0xFFE0E5EC),
+      outerShadowDark: Color(0x99A3B1C6),
+      outerShadowLight: Color(0xCCFFFFFF),
+      innerShadowDark: Color(0x4DA3B1C6),
+    );
+  }
+
+  static AppTheme darkSlate() {
+    return const AppTheme(
+      type: AppThemeType.darkSlate,
+      brightness: Brightness.dark,
+      background: Color(0xFF222222),
+      surface: Color(0xFF222222),
+      surfaceVariant: Color(0xFF1C1C1C),
+      panelBorder: Color(0xFF333333),
+      accent: Color(0xFF00E5FF),
+      accentLight: Color(0xFF66EDFF),
+      success: Color(0xFF00FF87),
+      error: Color(0xFFFF2A5F),
+      warning: Color(0xFFFFB000),
+      info: Color(0xFF9D4EDD),
+      textPrimary: Color(0xFFF1F5F9),
+      textSecondary: Color(0xFFA1A1AA),
+      textMuted: Color(0xFF52525B),
+      editorBackground: Color(0xFF1E1E1E),
+      editorLineHighlight: Color(0xFF2A2A2A),
+      editorLineNumber: Color(0xFF666666),
+      terminalBackground: Color(0xFF1A1A1A),
+      outerShadowDark: Color(0x99000000),
+      outerShadowLight: Color(0x1AFFFFFF),
+      innerShadowDark: Color(0x66000000),
+    );
+  }
+
+
+  static AppTheme gray() {
+    return const AppTheme(
+      type: AppThemeType.gray,
+      brightness: Brightness.dark,
+      background: Color(0xFF525252),
+      surface: Color(0xFF525252),
+      surfaceVariant: Color(0xFF444444),
+      panelBorder: Color(0xFF666666),
+      accent: Color(0xFFFF9800), // Orange accent for gray theme
+      accentLight: Color(0xFFFFB74D),
+      success: Color(0xFF66BB6A),
+      error: Color(0xFFEF5350),
+      warning: Color(0xFFFFCA28),
+      info: Color(0xFF29B6F6),
+      textPrimary: Color(0xFFF5F5F5),
+      textSecondary: Color(0xFFBDBDBD),
+      textMuted: Color(0xFF757575),
+      editorBackground: Color(0xFF4A4A4A),
+      editorLineHighlight: Color(0xFF5A5A5A),
+      editorLineNumber: Color(0xFF9E9E9E),
+      terminalBackground: Color(0xFF404040),
+      outerShadowDark: Color(0x80222222),
+      outerShadowLight: Color(0x1AFFFFFF),
+      innerShadowDark: Color(0x4D222222),
+    );
+  }
+
+  static AppTheme fromType(AppThemeType type) {
+    switch (type) {
+      case AppThemeType.neumorphismWhite: return neumorphismWhite();
+      case AppThemeType.darkSlate: return darkSlate();
+      case AppThemeType.gray: return gray();
+    }
+  }
+
+  // ─── Neumorphism Helpers ────────────────────────────────────────
   
-  // ─── Glassmorphism Helpers ──────────────────────────────────────
-  static Color get glassSurface => surface.withValues(alpha: 0.7);
-  static Color get glassBorder => Colors.white.withValues(alpha: 0.05);
+  BoxDecoration neumorphicOuter({double radius = 12}) => BoxDecoration(
+    color: surface,
+    borderRadius: BorderRadius.circular(radius),
+    boxShadow: [
+      BoxShadow(
+        color: outerShadowDark,
+        offset: const Offset(4, 4),
+        blurRadius: 10,
+      ),
+      BoxShadow(
+        color: outerShadowLight,
+        offset: const Offset(-4, -4),
+        blurRadius: 10,
+      ),
+    ],
+  );
+
+  BoxDecoration neumorphicInner({double radius = 12}) => BoxDecoration(
+    color: surfaceVariant,
+    borderRadius: BorderRadius.circular(radius),
+    border: Border.all(color: outerShadowLight.withValues(alpha: 0.1)),
+    boxShadow: [
+      BoxShadow(
+        color: innerShadowDark,
+        offset: const Offset(2, 2),
+        blurRadius: 6,
+        spreadRadius: 1,
+      ),
+      BoxShadow(
+        color: outerShadowLight.withValues(alpha: 0.05),
+        offset: const Offset(-2, -2),
+        blurRadius: 4,
+      )
+    ],
+  );
 
   // ─── Text styles ────────────────────────────────────────────────
-  static TextStyle get monoStyle => GoogleFonts.jetBrainsMono(
+  TextStyle get monoStyle => GoogleFonts.jetBrainsMono(
         fontSize: 13,
         height: 1.5,
         color: textPrimary,
       );
 
-  static TextStyle get monoSmall => GoogleFonts.jetBrainsMono(
+  TextStyle get monoSmall => GoogleFonts.jetBrainsMono(
         fontSize: 12,
         height: 1.4,
         color: textPrimary,
       );
 
-  static TextStyle get uiText => GoogleFonts.inter(
+  TextStyle get uiText => GoogleFonts.inter(
         fontSize: 13,
         color: textPrimary,
       );
 
-  static TextStyle get uiTextSmall => GoogleFonts.inter(
+  TextStyle get uiTextSmall => GoogleFonts.inter(
         fontSize: 12,
         color: textSecondary,
       );
 
-  static TextStyle get uiLabel => GoogleFonts.inter(
+  TextStyle get uiLabel => GoogleFonts.inter(
         fontSize: 11,
         fontWeight: FontWeight.w600,
         letterSpacing: 0.5,
@@ -65,18 +235,19 @@ class AppTheme {
       );
 
   // ─── ThemeData ──────────────────────────────────────────────────
-  static ThemeData get darkTheme => ThemeData(
-        brightness: Brightness.dark,
+  ThemeData get themeData => ThemeData(
+        brightness: brightness,
         scaffoldBackgroundColor: background,
-        colorScheme: const ColorScheme.dark(
+        colorScheme: ColorScheme(
+          brightness: brightness,
           primary: accent,
-          secondary: accentLight,
-          surface: surface,
-          error: error,
           onPrimary: Colors.white,
+          secondary: accentLight,
           onSecondary: Colors.white,
-          onSurface: textPrimary,
+          error: error,
           onError: Colors.white,
+          surface: surface,
+          onSurface: textPrimary,
         ),
         appBarTheme: AppBarTheme(
           backgroundColor: surface,
@@ -88,19 +259,18 @@ class AppTheme {
             color: textPrimary,
           ),
         ),
-        dividerTheme: const DividerThemeData(
+        dividerTheme: DividerThemeData(
           color: panelBorder,
           thickness: 1,
           space: 1,
         ),
-        iconTheme: const IconThemeData(color: textSecondary, size: 18),
+        iconTheme: IconThemeData(color: textSecondary, size: 18),
         tooltipTheme: TooltipThemeData(
           decoration: BoxDecoration(
-            color: surfaceVariant,
+            color: textPrimary,
             borderRadius: BorderRadius.circular(6),
-            border: Border.all(color: panelBorder),
           ),
-          textStyle: uiTextSmall,
+          textStyle: uiTextSmall.copyWith(color: background),
         ),
         scrollbarTheme: ScrollbarThemeData(
           thumbColor: WidgetStateProperty.all(panelBorder),

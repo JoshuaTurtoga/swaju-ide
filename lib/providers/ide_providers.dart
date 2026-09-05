@@ -3,6 +3,11 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/legacy.dart';
 
+import '../theme/app_theme.dart';
+
+// ─── Theme Provider ──────────────────────────────────────────────────────────
+final themeProvider = StateProvider<AppThemeType>((ref) => AppThemeType.neumorphismWhite);
+
 // ─── Terminal line model ──────────────────────────────────────────────────────
 enum TerminalLineType { stdout, stderr, ai, system }
 

@@ -73,6 +73,7 @@ class _TerminalPanelState extends ConsumerState<TerminalPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = AppTheme.fromType(ref.watch(themeProvider));
     final lines = ref.watch(terminalProvider);
 
     // Trigger auto-scroll and focus requests whenever lines change.
@@ -86,32 +87,24 @@ class _TerminalPanelState extends ConsumerState<TerminalPanel> {
     });
 
     return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.terminalBackground,
-        border: Border(
-          top: BorderSide(color: AppTheme.panelBorder, width: 1),
-        ),
-      ),
+      margin: const EdgeInsets.all(12).copyWith(top: 0),
+      decoration: theme.neumorphicInner(radius: 12),
       child: Column(
         children: [
           // ── Terminal header bar ──
-          ClipRect(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
-                height: 36,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: AppTheme.glassSurface,
-                  border: Border(
-                    bottom: BorderSide(color: AppTheme.glassBorder, width: 1),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.terminal_rounded, size: 16, color: AppTheme.accent),
+          Container(
+            height: 36,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: Colors.white.withValues(alpha: 0.2), width: 1),
+              ),
+            ),
+            child: Row(
+              children: [
+                    Icon(Icons.terminal_rounded, size: 16, color: theme.accent),
                 const SizedBox(width: 6),
-                Text('OUTPUT', style: AppTheme.uiLabel),
+                Text('OUTPUT', style: theme.uiLabel),
                 const Spacer(),
                 // Auto-scroll indicator
                 if (!_autoScroll)
@@ -128,13 +121,13 @@ class _TerminalPanelState extends ConsumerState<TerminalPanel> {
                           Icon(
                             Icons.arrow_downward_rounded,
                             size: 12,
-                            color: AppTheme.accent,
+                            color: theme.accent,
                           ),
                           const SizedBox(width: 2),
                           Text(
                             'Auto-scroll',
-                            style: AppTheme.uiLabel.copyWith(
-                              color: AppTheme.accent,
+                            style: theme.uiLabel.copyWith(
+                              color: theme.accent,
                               fontSize: 10,
                             ),
                           ),
@@ -153,7 +146,7 @@ class _TerminalPanelState extends ConsumerState<TerminalPanel> {
                       child: Icon(
                         Icons.delete_outline_rounded,
                         size: 14,
-                        color: AppTheme.textMuted,
+                        color: theme.textMuted,
                       ),
                     ),
                   ),
@@ -161,16 +154,14 @@ class _TerminalPanelState extends ConsumerState<TerminalPanel> {
               ],
             ),
           ),
-        ),
-      ),
-      // ── Terminal content and input ──
+          // ── Terminal content and input ──
           Expanded(
             child: lines.isEmpty && ref.watch(executionStateProvider) != ExecutionState.running
                 ? Center(
                     child: Text(
                       'Run your code to see output here.',
-                      style: AppTheme.monoSmall.copyWith(
-                        color: AppTheme.textMuted,
+                      style: theme.monoSmall.copyWith(
+                        color: theme.textMuted,
                       ),
                     ),
                   )
@@ -185,7 +176,7 @@ class _TerminalPanelState extends ConsumerState<TerminalPanel> {
                       if (index == lines.length) {
                         return Padding(
                           padding: const EdgeInsets.only(top: 4),
-                          child: _buildInputField(inline: false),
+                          child: _buildInputField(inline: false, theme: theme),
                         );
                       }
 
@@ -202,15 +193,15 @@ class _TerminalPanelState extends ConsumerState<TerminalPanel> {
                               Flexible(
                                 child: SelectableText(
                                   line.text,
-                                  style: AppTheme.monoSmall.copyWith(
-                                    color: _colorForType(line.type),
+                                  style: theme.monoSmall.copyWith(
+                                    color: _colorForType(line.type, theme),
                                   ),
                                 ),
                               ),
                               Expanded(
                                 child: Padding(
                                   padding: const EdgeInsets.only(left: 4),
-                                  child: _buildInputField(inline: true),
+                                  child: _buildInputField(inline: true, theme: theme),
                                 ),
                               ),
                             ],
@@ -223,8 +214,8 @@ class _TerminalPanelState extends ConsumerState<TerminalPanel> {
                         padding: const EdgeInsets.only(bottom: 1),
                         child: SelectableText(
                           line.text,
-                          style: AppTheme.monoSmall.copyWith(
-                            color: _colorForType(line.type),
+                          style: theme.monoSmall.copyWith(
+                            color: _colorForType(line.type, theme),
                           ),
                         ),
                       );
@@ -245,13 +236,13 @@ class _TerminalPanelState extends ConsumerState<TerminalPanel> {
     return lines.length;
   }
 
-  Widget _buildInputField({required bool inline}) {
+  Widget _buildInputField({required bool inline, required AppTheme theme}) {
     return Row(
       key: _inputKey,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         if (!inline) ...[
-          Text('>', style: AppTheme.monoSmall.copyWith(color: AppTheme.accent)),
+          Text('>', style: theme.monoSmall.copyWith(color: theme.accent)),
           const SizedBox(width: 8),
         ],
         Expanded(
@@ -273,8 +264,8 @@ class _TerminalPanelState extends ConsumerState<TerminalPanel> {
               controller: _inputController,
               focusNode: _inputFocusNode,
               autofocus: true,
-              style: AppTheme.monoSmall.copyWith(color: AppTheme.textPrimary),
-              cursorColor: AppTheme.accent,
+              style: theme.monoSmall.copyWith(color: theme.textPrimary),
+              cursorColor: theme.accent,
               decoration: const InputDecoration(
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
@@ -296,16 +287,19 @@ class _TerminalPanelState extends ConsumerState<TerminalPanel> {
     );
   }
 
-  Color _colorForType(TerminalLineType type) {
+  Color _colorForType(TerminalLineType type, AppTheme theme) {
     switch (type) {
       case TerminalLineType.stdout:
-        return AppTheme.textPrimary;
+        return theme.textPrimary;
       case TerminalLineType.stderr:
-        return AppTheme.error;
+        return theme.error;
       case TerminalLineType.ai:
-        return AppTheme.info;
+        return theme.info;
       case TerminalLineType.system:
-        return AppTheme.textMuted;
+        return theme.textMuted;
     }
   }
 }
+
+
+

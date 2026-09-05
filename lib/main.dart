@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'screens/home_screen.dart';
 import 'theme/app_theme.dart';
+import 'providers/ide_providers.dart';
 
 /// Entry point for Swaju IDE.
 ///
@@ -13,15 +14,18 @@ void main() {
   runApp(const ProviderScope(child: SwajuIdeApp()));
 }
 
-class SwajuIdeApp extends StatelessWidget {
+class SwajuIdeApp extends ConsumerWidget {
   const SwajuIdeApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeType = ref.watch(themeProvider);
+    final theme = AppTheme.fromType(themeType);
+
     return MaterialApp(
       title: 'Swaju IDE',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
+      theme: theme.themeData,
       home: const HomeScreen(),
     );
   }
