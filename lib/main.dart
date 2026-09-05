@@ -23,7 +23,7 @@ class SwajuIdeApp extends ConsumerWidget {
     final theme = AppTheme.fromType(themeType);
 
     return MaterialApp(
-      title: 'Swaju IDE',
+      title: './ACE',
       debugShowCheckedModeBanner: false,
       theme: theme.themeData,
       home: const HomeScreen(),

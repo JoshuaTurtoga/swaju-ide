@@ -141,9 +141,9 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </ProjectReference>
-    <ProjectReference Include="C:\Users\joshu\Documents\GitHub\swaju-ide\build\windows\x64\runner\swaju_ide.vcxproj">
-      <Project>{E391DA14-031C-3AE3-891E-AF1DBAC26437}</Project>
-      <Name>swaju_ide</Name>
+    <ProjectReference Include="C:\Users\joshu\Documents\GitHub\swaju-ide\build\windows\x64\runner\LACE.vcxproj">
+      <Project>{8071F57F-2B67-32A5-A272-6B2126D23951}</Project>
+      <Name>LACE</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -2,6 +2,7 @@ C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/runner/Debug/data/ic
 C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/runner/Debug/flutter_windows.dll
 C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/runner/Debug/lib_llama_cpp_windows.dll
 C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/runner/Debug/data/flutter_assets/AssetManifest.bin
+C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/runner/Debug/data/flutter_assets/assets/logo.png
 C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/runner/Debug/data/flutter_assets/FontManifest.json
 C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/runner/Debug/data/flutter_assets/fonts/MaterialIcons-Regular.otf
 C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/runner/Debug/data/flutter_assets/kernel_blob.bin

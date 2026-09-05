@@ -5,7 +5,7 @@ C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/flutter/CMakeFiles/f
 C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/flutter/CMakeFiles/flutter_wrapper_app.dir
 C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/flutter/CMakeFiles/flutter_assemble.dir
 C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/flutter/CMakeFiles/INSTALL.dir
-C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/runner/CMakeFiles/swaju_ide.dir
+C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/runner/CMakeFiles/LACE.dir
 C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/runner/CMakeFiles/INSTALL.dir
 C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/runner/CMakeFiles/ALL_BUILD.dir
 C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/plugins/jni/CMakeFiles/INSTALL.dir

@@ -17,6 +17,7 @@ import '../theme/app_theme.dart';
 import '../widgets/terminal_panel.dart';
 import '../widgets/toolbar.dart';
 import '../widgets/vertical_split_view.dart';
+import '../widgets/theme_transition_overlay.dart';
 
 /// Main IDE screen — 4 panel layout.
 ///
@@ -34,50 +35,53 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStateMixin {
   late CodeLineEditingController _editorController;
+  late AnimationController _themeAnimController;
+  late Animation<double> _themeAnim;
+  ThemeTransitionEvent? _lastThemeEvent;
 
   /// Default sample code per language.
   static const _defaultCode = <ProgrammingLanguage, String>{
-    ProgrammingLanguage.python: '''# Welcome to Swaju IDE!
+    ProgrammingLanguage.python: '''# Welcome to ./ACE!
 # Select a language and click Run.
 
 def greet(name):
-    return f"Hello, {name}! Welcome to Swaju IDE."
+    return f"Hello, {name}! Welcome to ./ACE."
 
 print(greet("World"))
 ''',
-    ProgrammingLanguage.c: '''// Welcome to Swaju IDE!
+    ProgrammingLanguage.c: '''// Welcome to ./ACE!
 #include <stdio.h>
 
 int main() {
-    printf("Hello, World! Welcome to Swaju IDE.\\n");
+    printf("Hello, World! Welcome to ./ACE.\\n");
     return 0;
 }
 ''',
-    ProgrammingLanguage.cpp: '''// Welcome to Swaju IDE!
+    ProgrammingLanguage.cpp: '''// Welcome to ./ACE!
 #include <iostream>
 #include <string>
 
 int main() {
     std::string name = "World";
-    std::cout << "Hello, " << name << "! Welcome to Swaju IDE." << std::endl;
+    std::cout << "Hello, " << name << "! Welcome to ./ACE." << std::endl;
     return 0;
 }
 ''',
-    ProgrammingLanguage.csharp: '''// Welcome to Swaju IDE!
+    ProgrammingLanguage.csharp: '''// Welcome to ./ACE!
 using System;
 
 class Program {
     static void Main(string[] args) {
-        Console.WriteLine("Hello, World! Welcome to Swaju IDE.");
+        Console.WriteLine("Hello, World! Welcome to ./ACE.");
     }
 }
 ''',
-    ProgrammingLanguage.java: '''// Welcome to Swaju IDE!
+    ProgrammingLanguage.java: '''// Welcome to ./ACE!
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Hello, World! Welcome to Swaju IDE.");
+        System.out.println("Hello, World! Welcome to ./ACE.");
     }
 }
 ''',
@@ -89,6 +93,14 @@ public class Main {
     _editorController = CodeLineEditingController.fromText(
       _defaultCode[ProgrammingLanguage.python]!,
     );
+    _themeAnimController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 550),
+    );
+    _themeAnim = CurvedAnimation(
+      parent: _themeAnimController,
+      curve: Curves.easeInOut,
+    );
 
     // Initialise the AI service on startup.
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -99,6 +111,7 @@ public class Main {
   @override
   void dispose() {
     _editorController.dispose();
+    _themeAnimController.dispose();
     super.dispose();
   }
 
@@ -173,6 +186,16 @@ public class Main {
     // Listen for language changes to swap default code.
     ref.listen<ProgrammingLanguage>(selectedLanguageProvider, _onLanguageChanged);
 
+    // Listen for theme transition events
+    ref.listen<ThemeTransitionEvent?>(themeTransitionEventProvider, (prev, next) {
+      if (next != null && next.eventId != _lastThemeEvent?.eventId) {
+        setState(() {
+          _lastThemeEvent = next;
+        });
+        _themeAnimController.forward(from: 0.0);
+      }
+    });
+
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.f5): () {
@@ -184,65 +207,95 @@ public class Main {
       },
       child: FocusScope(
         autofocus: true,
-        child: Scaffold(
-          backgroundColor: theme.background,
-          body: Column(
-            children: [
-              // ── Top toolbar ──
-              Toolbar(onRun: _runCode, onKill: _killProcess),
+        child: Stack(
+          children: [
+            // Main UI (New theme)
+            RepaintBoundary(
+              key: ref.watch(rootBoundaryKeyProvider),
+              child: Scaffold(
+                backgroundColor: theme.background,
+                body: Column(
+                  children: [
+                    // ── Top toolbar ──
+                    Toolbar(onRun: _runCode, onKill: _killProcess),
 
-              // ── Main content area ──
-              Expanded(
-                child: VerticalSplitView(
-                  top: Container(
-                    margin: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-                    decoration: theme.neumorphicInner(radius: 12),
-                    clipBehavior: Clip.antiAlias,
-                    child: CodeEditor(
-                      controller: _editorController,
-                      style: CodeEditorStyle(
-                        fontSize: 14,
-                        fontFamily: 'JetBrains Mono',
-                        codeTheme: _getHighlightTheme(selectedLang, theme),
-                        backgroundColor: theme.editorBackground,
-                        textColor: theme.textPrimary,
-                        cursorColor: theme.accent,
-                        selectionColor: theme.accent.withValues(alpha: 0.25),
-                        cursorLineColor: theme.editorLineHighlight,
+                    // ── Main content area ──
+                    Expanded(
+                      child: VerticalSplitView(
+                        top: Container(
+                          margin: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+                          decoration: theme.neumorphicInner(radius: 12),
+                          clipBehavior: Clip.antiAlias,
+                          child: CodeEditor(
+                            controller: _editorController,
+                            style: CodeEditorStyle(
+                              fontSize: 14,
+                              fontFamily: 'JetBrains Mono',
+                              codeTheme: _getHighlightTheme(selectedLang, theme),
+                              backgroundColor: theme.editorBackground,
+                              textColor: theme.textPrimary,
+                              cursorColor: theme.accent,
+                              selectionColor: theme.accent.withValues(alpha: 0.25),
+                              cursorLineColor: theme.editorLineHighlight,
+                            ),
+                            indicatorBuilder: (
+                              context,
+                              editingController,
+                              chunkController,
+                              notifier,
+                            ) {
+                              return Row(
+                                children: [
+                                  DefaultCodeLineNumber(
+                                    controller: editingController,
+                                    notifier: notifier,
+                                    textStyle: theme.monoSmall.copyWith(
+                                      color: theme.editorLineNumber,
+                                    ),
+                                  ),
+                                  DefaultCodeChunkIndicator(
+                                    width: 20,
+                                    controller: chunkController,
+                                    notifier: notifier,
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+                        bottom: const TerminalPanel(),
                       ),
-                      indicatorBuilder: (
-                        context,
-                        editingController,
-                        chunkController,
-                        notifier,
-                      ) {
-                        return Row(
-                          children: [
-                            DefaultCodeLineNumber(
-                              controller: editingController,
-                              notifier: notifier,
-                              textStyle: theme.monoSmall.copyWith(
-                                color: theme.editorLineNumber,
-                              ),
-                            ),
-                            DefaultCodeChunkIndicator(
-                              width: 20,
-                              controller: chunkController,
-                              notifier: notifier,
-                            ),
-                          ],
-                        );
-                      },
                     ),
-                  ),
-                  bottom: const TerminalPanel(),
+
+                    // ── Status bar ──
+                    _StatusBar(language: selectedLang),
+                  ],
                 ),
               ),
+            ),
 
-              // ── Status bar ──
-              _StatusBar(language: selectedLang),
-            ],
-          ),
+            // Old UI Snapshot with a hole punched in it
+            if (_lastThemeEvent != null && _lastThemeEvent!.image != null)
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: AnimatedBuilder(
+                    animation: _themeAnim,
+                    builder: (context, _) {
+                      return ClipPath(
+                        clipper: HoleClipper(
+                          progress: _themeAnim.value,
+                          origin: _lastThemeEvent!.origin,
+                        ),
+                        child: RawImage(
+                          image: _lastThemeEvent!.image,
+                          fit: BoxFit.fill,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -285,7 +338,15 @@ class _StatusBar extends ConsumerWidget {
           ),
           const SizedBox(width: 16),
           Text(
-            'Swaju IDE v1.0.0',
+            './ACE v1.0.0',
+            style: theme.uiLabel.copyWith(
+              color: theme.textMuted,
+              fontSize: 11,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Text(
+            'by jswtrtg.dev',
             style: theme.uiLabel.copyWith(
               color: theme.textMuted,
               fontSize: 11,

@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 enum AppThemeType {
   neumorphismWhite,
   darkSlate,
-  gray,
 }
 
 extension AppThemeTypeExtension on AppThemeType {
@@ -14,8 +13,16 @@ extension AppThemeTypeExtension on AppThemeType {
         return 'White';
       case AppThemeType.darkSlate:
         return 'Dark';
-      case AppThemeType.gray:
-        return 'Gray';
+    }
+  }
+
+  /// Representative background colour shown as a swatch in the toolbar.
+  Color get previewColor {
+    switch (this) {
+      case AppThemeType.neumorphismWhite:
+        return const Color(0xFFE0E5EC);
+      case AppThemeType.darkSlate:
+        return const Color(0xFF222222);
     }
   }
 }
@@ -131,38 +138,12 @@ class AppTheme {
   }
 
 
-  static AppTheme gray() {
-    return const AppTheme(
-      type: AppThemeType.gray,
-      brightness: Brightness.dark,
-      background: Color(0xFF525252),
-      surface: Color(0xFF525252),
-      surfaceVariant: Color(0xFF444444),
-      panelBorder: Color(0xFF666666),
-      accent: Color(0xFFFF9800), // Orange accent for gray theme
-      accentLight: Color(0xFFFFB74D),
-      success: Color(0xFF66BB6A),
-      error: Color(0xFFEF5350),
-      warning: Color(0xFFFFCA28),
-      info: Color(0xFF29B6F6),
-      textPrimary: Color(0xFFF5F5F5),
-      textSecondary: Color(0xFFBDBDBD),
-      textMuted: Color(0xFF757575),
-      editorBackground: Color(0xFF4A4A4A),
-      editorLineHighlight: Color(0xFF5A5A5A),
-      editorLineNumber: Color(0xFF9E9E9E),
-      terminalBackground: Color(0xFF404040),
-      outerShadowDark: Color(0x80222222),
-      outerShadowLight: Color(0x1AFFFFFF),
-      innerShadowDark: Color(0x4D222222),
-    );
-  }
+
 
   static AppTheme fromType(AppThemeType type) {
     switch (type) {
       case AppThemeType.neumorphismWhite: return neumorphismWhite();
       case AppThemeType.darkSlate: return darkSlate();
-      case AppThemeType.gray: return gray();
     }
   }
 

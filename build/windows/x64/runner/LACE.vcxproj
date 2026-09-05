@@ -18,11 +18,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{E391DA14-031C-3AE3-891E-AF1DBAC26437}</ProjectGuid>
+    <ProjectGuid>{8071F57F-2B67-32A5-A272-6B2126D23951}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
     <Platform>x64</Platform>
-    <ProjectName>swaju_ide</ProjectName>
+    <ProjectName>LACE</ProjectName>
     <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -51,20 +51,20 @@
   <PropertyGroup>
     <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\joshu\Documents\GitHub\swaju-ide\build\windows\x64\runner\Debug\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">swaju_ide.dir\Debug\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">swaju_ide</TargetName>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">LACE.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">LACE</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.exe</TargetExt>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateManifest>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">C:\Users\joshu\Documents\GitHub\swaju-ide\build\windows\x64\runner\Profile\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">swaju_ide.dir\Profile\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">swaju_ide</TargetName>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">LACE.dir\Profile\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">LACE</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">.exe</TargetExt>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">false</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</GenerateManifest>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\joshu\Documents\GitHub\swaju-ide\build\windows\x64\runner\Release\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">swaju_ide.dir\Release\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">swaju_ide</TargetName>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">LACE.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">LACE</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.exe</TargetExt>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateManifest>
@@ -118,9 +118,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ImageHasSafeExceptionHandlers></ImageHasSafeExceptionHandlers>
-      <ImportLibrary>C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/runner/Debug/swaju_ide.lib</ImportLibrary>
+      <ImportLibrary>C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/runner/Debug/LACE.lib</ImportLibrary>
       <LinkErrorReporting></LinkErrorReporting>
-      <ProgramDataBaseFile>C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/runner/Debug/swaju_ide.pdb</ProgramDataBaseFile>
+      <ProgramDataBaseFile>C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/runner/Debug/LACE.pdb</ProgramDataBaseFile>
       <RandomizedBaseAddress></RandomizedBaseAddress>
       <SubSystem>Windows</SubSystem>
     </Link>
@@ -181,9 +181,9 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ImageHasSafeExceptionHandlers></ImageHasSafeExceptionHandlers>
-      <ImportLibrary>C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/runner/Profile/swaju_ide.lib</ImportLibrary>
+      <ImportLibrary>C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/runner/Profile/LACE.lib</ImportLibrary>
       <LinkErrorReporting></LinkErrorReporting>
-      <ProgramDataBaseFile>C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/runner/Profile/swaju_ide.pdb</ProgramDataBaseFile>
+      <ProgramDataBaseFile>C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/runner/Profile/LACE.pdb</ProgramDataBaseFile>
       <RandomizedBaseAddress></RandomizedBaseAddress>
       <SubSystem>Windows</SubSystem>
     </Link>
@@ -244,9 +244,9 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ImageHasSafeExceptionHandlers></ImageHasSafeExceptionHandlers>
-      <ImportLibrary>C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/runner/Release/swaju_ide.lib</ImportLibrary>
+      <ImportLibrary>C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/runner/Release/LACE.lib</ImportLibrary>
       <LinkErrorReporting></LinkErrorReporting>
-      <ProgramDataBaseFile>C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/runner/Release/swaju_ide.pdb</ProgramDataBaseFile>
+      <ProgramDataBaseFile>C:/Users/joshu/Documents/GitHub/swaju-ide/build/windows/x64/runner/Release/LACE.pdb</ProgramDataBaseFile>
       <RandomizedBaseAddress></RandomizedBaseAddress>
       <SubSystem>Windows</SubSystem>
     </Link>

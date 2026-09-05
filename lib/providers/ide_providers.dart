@@ -1,12 +1,34 @@
 import 'dart:io';
 import 'dart:async';
+import 'dart:ui' as ui;
 
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
 import '../theme/app_theme.dart';
 
-// ─── Theme Provider ──────────────────────────────────────────────────────────
+// ─── Theme Provider & Transition Event ─────────────────────────────────────────
 final themeProvider = StateProvider<AppThemeType>((ref) => AppThemeType.neumorphismWhite);
+final rootBoundaryKeyProvider = Provider<GlobalKey>((ref) => GlobalKey());
+
+class ThemeTransitionEvent {
+  final Offset origin;
+  final Color fromColor;
+  final Color toColor;
+  final int eventId;
+  final ui.Image? image;
+
+  const ThemeTransitionEvent({
+    required this.origin,
+    required this.fromColor,
+    required this.toColor,
+    required this.eventId,
+    this.image,
+  });
+}
+
+final themeTransitionEventProvider = StateProvider<ThemeTransitionEvent?>((ref) => null);
 
 // ─── Terminal line model ──────────────────────────────────────────────────────
 enum TerminalLineType { stdout, stderr, ai, system }

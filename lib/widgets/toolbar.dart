@@ -1,7 +1,10 @@
-import 'dart:ui';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
+import 'package:google_fonts/google_fonts.dart';
 
 import '../providers/ide_providers.dart';
 import '../theme/app_theme.dart';
@@ -36,46 +39,32 @@ class Toolbar extends ConsumerWidget {
       child: Row(
         children: [
           // ── App icon / title ──
-          Icon(Icons.code_rounded, color: theme.accent, size: 22),
-          const SizedBox(width: 8),
-          Text(
-            'Swaju IDE',
-            style: theme.uiText.copyWith(
-              fontWeight: FontWeight.w700,
-              fontSize: 14,
-              color: theme.textPrimary,
-            ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                './ACE',
+                style: GoogleFonts.zenDots(
+                  fontSize: 28,
+                  height: 1.0,
+                  letterSpacing: -1.0,
+                  color: theme.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Local AI Compiler Engine',
+                style: theme.uiTextSmall.copyWith(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: -0.2,
+                  color: theme.textSecondary,
+                ),
+              ),
+            ],
           ),
           const SizedBox(width: 24),
-
-          // ── Language dropdown ──
-          CustomDropdown<ProgrammingLanguage>(
-            theme: theme,
-            value: selectedLang,
-            items: ProgrammingLanguage.values.map((lang) {
-              return CustomDropdownItem(
-                value: lang,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _langIcon(lang),
-                    const SizedBox(width: 8),
-                    Text(
-                      lang.displayName,
-                      style: theme.uiText.copyWith(fontSize: 13),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-            onChanged: (lang) {
-              if (lang != null) {
-                ref.read(selectedLanguageProvider.notifier).state = lang;
-              }
-            },
-          ),
-
-          const SizedBox(width: 16),
 
           // ── Run button ──
           _ToolbarButton(
@@ -107,27 +96,39 @@ class Toolbar extends ConsumerWidget {
 
           const Spacer(),
 
-          // ── Theme dropdown ──
-          CustomDropdown<AppThemeType>(
+          // ── Language dropdown (right side) ──
+          CustomDropdown<ProgrammingLanguage>(
             theme: theme,
-            value: themeType,
-            items: AppThemeType.values.map((type) {
+            width: 180,
+            value: selectedLang,
+            items: ProgrammingLanguage.values.map((lang) {
               return CustomDropdownItem(
-                value: type,
-                selectedChild: Icon(Icons.palette_rounded, color: theme.textSecondary, size: 16),
-                child: Text(
-                  type.displayName,
-                  style: theme.uiText.copyWith(fontSize: 13),
+                value: lang,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _langIcon(lang),
+                    const SizedBox(width: 8),
+                    Text(
+                      lang.displayName,
+                      style: theme.uiText.copyWith(fontSize: 13),
+                    ),
+                  ],
                 ),
               );
             }).toList(),
-            onChanged: (type) {
-              if (type != null) {
-                ref.read(themeProvider.notifier).state = type;
+            onChanged: (lang) {
+              if (lang != null) {
+                ref.read(selectedLanguageProvider.notifier).state = lang;
               }
             },
           ),
-          
+
+          const SizedBox(width: 12),
+
+          // ── Theme toggle (light / dark) ──
+          ThemeToggleButton(theme: theme, themeType: themeType),
+
           const SizedBox(width: 16),
 
           // ── AI status ──
@@ -315,5 +316,264 @@ class _ToolbarButtonState extends State<_ToolbarButton> {
       ),
     );
   }
+}
+
+// ─── Theme toggle button ─────────────────────────────────────────────────────
+class ThemeToggleButton extends ConsumerStatefulWidget {
+  final AppTheme theme;
+  final AppThemeType themeType;
+
+  const ThemeToggleButton({
+    super.key,
+    required this.theme,
+    required this.themeType,
+  });
+
+  @override
+  ConsumerState<ThemeToggleButton> createState() => _ThemeToggleButtonState();
+}
+
+class _ThemeToggleButtonState extends ConsumerState<ThemeToggleButton> {
+  Future<void> _toggle() async {
+    final isDark = widget.themeType == AppThemeType.darkSlate;
+    final nextType =
+        isDark ? AppThemeType.neumorphismWhite : AppThemeType.darkSlate;
+    final currentTheme = AppTheme.fromType(widget.themeType);
+    final nextTheme = AppTheme.fromType(nextType);
+
+    // Get centre of this button in global coordinates.
+    final renderBox = context.findRenderObject() as RenderBox?;
+    
+    // Capture snapshot of the current UI
+    final rootKey = ref.read(rootBoundaryKeyProvider);
+    ui.Image? snapshot;
+    if (rootKey.currentContext != null) {
+      final boundary = rootKey.currentContext!.findRenderObject() as RenderRepaintBoundary?;
+      if (boundary != null) {
+        snapshot = await boundary.toImage(pixelRatio: MediaQuery.of(context).devicePixelRatio);
+      }
+    }
+
+    if (renderBox != null) {
+      final origin =
+          renderBox.localToGlobal(renderBox.size.center(Offset.zero));
+
+      // Trigger background reveal animation behind window contents
+      ref.read(themeTransitionEventProvider.notifier).state =
+          ThemeTransitionEvent(
+        origin: origin,
+        fromColor: currentTheme.background,
+        toColor: nextTheme.background,
+        eventId: DateTime.now().microsecondsSinceEpoch,
+        image: snapshot,
+      );
+    }
+
+    // Switch theme immediately
+    ref.read(themeProvider.notifier).state = nextType;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isLight = widget.themeType == AppThemeType.neumorphismWhite;
+
+    return Tooltip(
+      message: isLight ? 'Switch to Dark Mode' : 'Switch to Light Mode',
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: _toggle,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: widget.theme.neumorphicOuter(radius: 8),
+            child: _AnimatedLightbulbIcon(
+              isOn: isLight,
+              theme: widget.theme,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Animated Lightbulb Icon ──────────────────────────────────────────────────
+class _AnimatedLightbulbIcon extends StatefulWidget {
+  final bool isOn;
+  final AppTheme theme;
+
+  const _AnimatedLightbulbIcon({
+    required this.isOn,
+    required this.theme,
+  });
+
+  @override
+  State<_AnimatedLightbulbIcon> createState() => _AnimatedLightbulbIconState();
+}
+
+class _AnimatedLightbulbIconState extends State<_AnimatedLightbulbIcon>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _glowAnim;
+  late Animation<double> _scaleAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 380),
+      value: widget.isOn ? 1.0 : 0.0,
+    );
+
+    _glowAnim = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
+
+    _scaleAnim = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.0, end: 1.25)
+            .chain(CurveTween(curve: Curves.easeOutCubic)),
+        weight: 45,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.25, end: 1.0)
+            .chain(CurveTween(curve: Curves.easeInBack)),
+        weight: 55,
+      ),
+    ]).animate(_controller);
+  }
+
+  @override
+  void didUpdateWidget(covariant _AnimatedLightbulbIcon oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isOn != oldWidget.isOn) {
+      if (widget.isOn) {
+        _controller.forward(from: 0.0);
+      } else {
+        _controller.reverse(from: 1.0);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        final t = _glowAnim.value; // 0.0 = OFF, 1.0 = ON
+        final bulbColor = Color.lerp(
+          widget.theme.textMuted,
+          const Color(0xFFFFB000),
+          t,
+        )!;
+
+        return SizedBox(
+          width: 22,
+          height: 22,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Radial warm glow when turning ON / lit
+              if (t > 0.01)
+                Container(
+                  width: 18,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFFB000).withValues(alpha: 0.55 * t),
+                        blurRadius: 10 * t,
+                        spreadRadius: 2 * t,
+                      ),
+                      BoxShadow(
+                        color: const Color(0xFFFFE082).withValues(alpha: 0.3 * t),
+                        blurRadius: 16 * t,
+                        spreadRadius: 4 * t,
+                      ),
+                    ],
+                  ),
+                ),
+
+              // Lightbulb icon with spring scale & crossfade
+              Transform.scale(
+                scale: _scaleAnim.value,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Off bulb (dim outline)
+                    Opacity(
+                      opacity: (1.0 - t).clamp(0.0, 1.0),
+                      child: Icon(
+                        Icons.lightbulb_outline_rounded,
+                        key: const ValueKey('bulb_off'),
+                        color: widget.theme.textMuted,
+                        size: 19,
+                      ),
+                    ),
+                    // On bulb (bright golden filled)
+                    Opacity(
+                      opacity: t.clamp(0.0, 1.0),
+                      child: Icon(
+                        Icons.lightbulb_rounded,
+                        key: const ValueKey('bulb_on'),
+                        color: bulbColor,
+                        size: 19,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+// ─── Circular reveal painter ──────────────────────────────────────────────────
+class CircleRevealPainter extends CustomPainter {
+  final double progress;
+  final Offset origin;
+  final Color color;
+
+  const CircleRevealPainter({
+    required this.progress,
+    required this.origin,
+    required this.color,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Radius grows to reach the farthest corner from the origin.
+    final corners = [
+      Offset.zero,
+      Offset(size.width, 0),
+      Offset(0, size.height),
+      Offset(size.width, size.height),
+    ];
+    final maxRadius = corners
+        .map((c) => (c - origin).distance)
+        .reduce((a, b) => a > b ? a : b);
+
+    canvas.drawCircle(
+      origin,
+      maxRadius * progress,
+      Paint()..color = color,
+    );
+  }
+
+  @override
+  bool shouldRepaint(CircleRevealPainter old) =>
+      old.progress != progress || old.color != color;
 }
 
