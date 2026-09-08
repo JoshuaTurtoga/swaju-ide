@@ -8,12 +8,11 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../providers/ide_providers.dart';
 import '../theme/app_theme.dart';
-import 'custom_dropdown.dart';
 
 /// Top toolbar for the IDE.
 ///
-/// Contains: language selector dropdown, Run button, Kill button, and a
-/// status indicator showing the current execution state.
+/// Contains: language selector dropdown, Run button, Kill button,
+/// a Convert Code button (Feature 3), and a status indicator.
 class Toolbar extends ConsumerWidget {
   /// Called when the user clicks Run.
   final VoidCallback onRun;
@@ -21,7 +20,15 @@ class Toolbar extends ConsumerWidget {
   /// Called when the user clicks Kill.
   final VoidCallback onKill;
 
-  const Toolbar({super.key, required this.onRun, required this.onKill});
+  /// Called when the user clicks Convert Code (opens language dialog).
+  final VoidCallback onConvert;
+
+  const Toolbar({
+    super.key,
+    required this.onRun,
+    required this.onKill,
+    required this.onConvert,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -86,38 +93,68 @@ class Toolbar extends ConsumerWidget {
             tooltip: 'Kill running process (F6)',
           ),
 
+          const SizedBox(width: 8),
+
+          // ── Convert Code button (Feature 3) ──
+          Consumer(builder: (context, ref, _) {
+            final aiLoaded = ref.watch(aiLoadedProvider);
+            return _ToolbarButton(
+              icon: Icons.swap_horiz_rounded,
+              label: 'Convert',
+              color: theme.info,
+              onPressed: (aiLoaded && !isRunning) ? onConvert : null,
+              tooltip: aiLoaded
+                  ? 'Convert code to another language'
+                  : 'AI not connected — cannot convert',
+            );
+          }),
+
           const SizedBox(width: 16),
 
           // ── Status indicator ──
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            child: _statusChip(execState, theme),
-          ),
+          Consumer(builder: (context, ref, _) {
+            final isAnalyzing = ref.watch(isAiAnalyzingProvider);
+            final isConverting = ref.watch(isConvertingProvider);
+            return AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: _statusChip(execState, isAnalyzing, isConverting, theme),
+            );
+          }),
 
           const Spacer(),
 
           // ── Language dropdown (right side) ──
-          CustomDropdown<ProgrammingLanguage>(
-            theme: theme,
-            width: 180,
-            value: selectedLang,
-            items: ProgrammingLanguage.values.map((lang) {
-              return CustomDropdownItem(
-                value: lang,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _langIcon(lang),
-                    const SizedBox(width: 8),
-                    Text(
-                      lang.displayName,
-                      style: theme.uiText.copyWith(fontSize: 13),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-            onChanged: (lang) {
+          DropdownMenu<ProgrammingLanguage>(
+            key: ValueKey(selectedLang),
+            initialSelection: selectedLang,
+            width: 170,
+            leadingIcon: Padding(
+              padding: const EdgeInsets.only(left: 12.0, right: 8.0),
+              child: _langIcon(selectedLang),
+            ),
+            textStyle: theme.uiText.copyWith(fontSize: 13),
+            inputDecorationTheme: InputDecorationTheme(
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+              filled: true,
+              fillColor: theme.surface,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+              isDense: true,
+              constraints: const BoxConstraints(maxHeight: 38),
+            ),
+            menuStyle: MenuStyle(
+              visualDensity: VisualDensity.standard,
+              backgroundColor: WidgetStatePropertyAll(theme.surface),
+              shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(10), side: BorderSide(color: theme.panelBorder))),
+            ),
+            dropdownMenuEntries: ProgrammingLanguage.values.map((lang) => DropdownMenuEntry(
+              value: lang,
+              label: lang.displayName,
+              leadingIcon: Padding(
+                padding: const EdgeInsets.only(right: 8.0, left: 4.0),
+                child: _langIcon(lang),
+              ),
+            )).toList(),
+            onSelected: (lang) {
               if (lang != null) {
                 ref.read(selectedLanguageProvider.notifier).state = lang;
               }
@@ -183,7 +220,54 @@ class Toolbar extends ConsumerWidget {
     );
   }
 
-  Widget _statusChip(ExecutionState state, AppTheme theme) {
+  Widget _statusChip(
+      ExecutionState state, bool isAnalyzing, bool isConverting, AppTheme theme) {
+    if (isConverting) {
+      return Row(
+        key: const ValueKey('ai_converting'),
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 12,
+            height: 12,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(theme.info),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            'Converting…',
+            style: theme.uiTextSmall
+                .copyWith(color: theme.info, fontWeight: FontWeight.w600),
+          ),
+        ],
+      );
+    }
+
+    if (isAnalyzing) {
+      return Row(
+        key: const ValueKey('ai_analyzing'),
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 12,
+            height: 12,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(theme.info),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            'AI Analyzing…',
+            style: theme.uiTextSmall
+                .copyWith(color: theme.info, fontWeight: FontWeight.w600),
+          ),
+        ],
+      );
+    }
+
     switch (state) {
       case ExecutionState.idle:
         return Row(
@@ -267,7 +351,6 @@ class _ToolbarButton extends StatefulWidget {
 }
 
 class _ToolbarButtonState extends State<_ToolbarButton> {
-  bool _hovered = false;
   bool _pressed = false;
 
   @override
@@ -279,11 +362,7 @@ class _ToolbarButtonState extends State<_ToolbarButton> {
     return Tooltip(
       message: widget.tooltip,
       child: MouseRegion(
-        onEnter: (_) => setState(() => _hovered = true),
-        onExit: (_) => setState(() {
-          _hovered = false;
-          _pressed = false;
-        }),
+        onExit: (_) => setState(() => _pressed = false),
         cursor: enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
         child: GestureDetector(
           onTapDown: (_) => enabled ? setState(() => _pressed = true) : null,

@@ -80,7 +80,8 @@ class ExecutionService {
   final Ref ref;
   ExecutionService(this.ref);
 
-  void _log(String text, TerminalLineType type, {bool chunk = false}) {
+  void _log(String text, TerminalLineType type, {bool chunk = false, bool silent = false}) {
+    if (silent) return;
     try {
       final notifier = ref.read(terminalProvider.notifier);
       if (chunk) {
@@ -91,7 +92,7 @@ class ExecutionService {
     } catch (_) {}
   }
 
-  void _logChunk(String text, TerminalLineType type) => _log(text, type, chunk: true);
+  void _logChunk(String text, TerminalLineType type, {bool silent = false}) => _log(text, type, chunk: true, silent: silent);
 
   String? _javaBinDir;
 
@@ -141,9 +142,14 @@ class ExecutionService {
 
   /// Compile and run [code] in the given [language].
   /// Returns accumulated stderr text (empty if none).
-  Future<String> execute(String code, ProgrammingLanguage language) async {
+  Future<String> execute(String code, ProgrammingLanguage language, {bool silent = false}) async {
     final config = _langConfigs[language]!;
     final stderrBuffer = StringBuffer();
+
+    // Reset error state at start of execution
+    try {
+      ref.read(hasCompilationErrorProvider.notifier).state = false;
+    } catch (_) {}
 
     // ── 1. Write source file ──────────────────────────────────────
     late Directory workDir;
@@ -199,16 +205,16 @@ class ExecutionService {
         await File('${workDir.path}\\main.csproj').writeAsString(csproj);
       }
     } catch (e) {
-      _log('✗ Failed to create temp files: $e', TerminalLineType.stderr);
+      _log('✗ Failed to create temp files: $e', TerminalLineType.stderr, silent: silent);
       return '';
     }
 
-    _log('▶ Running ${language.displayName}…', TerminalLineType.system);
+    _log('▶ Running ${language.displayName}…', TerminalLineType.system, silent: silent);
 
     // ── 2. Compile ────────────────────────────────────────────────
     if (config.compileCmd != null) {
-      _setState(ExecutionState.compiling);
-      _log('  Compiling…', TerminalLineType.system);
+      if (!silent) _setState(ExecutionState.compiling);
+      _log('  Compiling…', TerminalLineType.system, silent: silent);
 
       String sub(String a) => a
           .replaceAll('{file}', filePath)
@@ -227,27 +233,33 @@ class ExecutionService {
         final proc = await Process.start(args.first, args.sublist(1),
             workingDirectory: workDir.path);
         _setProcess(proc);
-        _startPiping(proc, stderrBuffer);
+        _startPiping(proc, stderrBuffer, silent: silent);
         final code = await proc.exitCode;
         _setProcess(null);
 
         if (code != 0) {
-          _log('✗ Compilation failed (exit $code)', TerminalLineType.system);
-          _setState(ExecutionState.idle);
+          _log('✗ Compilation failed (exit $code)', TerminalLineType.system, silent: silent);
+          if (!silent) _setState(ExecutionState.idle);
+          try {
+            ref.read(hasCompilationErrorProvider.notifier).state = true;
+          } catch (_) {}
           return stderrBuffer.toString();
         }
-        _log('  Compilation succeeded.', TerminalLineType.system);
+        _log('  Compilation succeeded.', TerminalLineType.system, silent: silent);
       } catch (e) {
-        _log('✗ Compiler not found: ${args.first}', TerminalLineType.stderr);
+        _log('✗ Compiler not found: ${args.first}', TerminalLineType.stderr, silent: silent);
         final hint = _compilerInstallHint(language);
-        if (hint != null) _log('  $hint', TerminalLineType.system);
-        _setState(ExecutionState.idle);
-        return 'Compiler not found: ${args.first}';
+        if (hint != null) _log(hint, TerminalLineType.system, silent: silent);
+        if (!silent) _setState(ExecutionState.idle);
+        try {
+          ref.read(hasCompilationErrorProvider.notifier).state = true;
+        } catch (_) {}
+        return 'Compiler not found: $e';
       }
     }
 
     // ── 3. Run ────────────────────────────────────────────────────
-    _setState(ExecutionState.running);
+    if (!silent) _setState(ExecutionState.running);
 
     String sub(String a) => a
         .replaceAll('{file}', filePath)
@@ -269,17 +281,26 @@ class ExecutionService {
 
       // Pipe output in background — do NOT await so the event loop stays free
       // and sendInput() can write to stdin while the process is alive.
-      _startPiping(proc, stderrBuffer);
+      _startPiping(proc, stderrBuffer, silent: silent);
 
       final exitCode = await proc.exitCode;
       _setProcess(null);
-      _log('── Process exited with code $exitCode ──', TerminalLineType.system);
+      _log('── Process exited with code $exitCode ──', TerminalLineType.system, silent: silent);
+      
+      if (exitCode != 0 || stderrBuffer.isNotEmpty) {
+        try {
+          ref.read(hasCompilationErrorProvider.notifier).state = true;
+        } catch (_) {}
+      }
     } catch (e) {
-      _log('✗ Runtime not found: ${runArgs.first}', TerminalLineType.stderr);
-      _log('  Make sure the runtime is installed and on your PATH.', TerminalLineType.system);
+      _log('✗ Runtime not found: ${runArgs.first}', TerminalLineType.stderr, silent: silent);
+      _log('  Make sure the runtime is installed and on your PATH.', TerminalLineType.system, silent: silent);
+      try {
+        ref.read(hasCompilationErrorProvider.notifier).state = true;
+      } catch (_) {}
     }
 
-    _setState(ExecutionState.idle);
+    if (!silent) _setState(ExecutionState.idle);
     return stderrBuffer.toString();
   }
 
@@ -336,11 +357,11 @@ class ExecutionService {
   // We use addChunk (not addLine) so that C printf prompts without a
   // trailing \n appear immediately in the terminal instead of being held
   // by LineSplitter until a newline arrives.
-  void _startPiping(Process process, StringBuffer stderrBuffer) {
+  void _startPiping(Process process, StringBuffer stderrBuffer, {bool silent = false}) {
     process.stdout
         .transform(utf8.decoder)
         .listen(
-          (chunk) => _log(chunk, TerminalLineType.stdout, chunk: true),
+          (chunk) => _log(chunk, TerminalLineType.stdout, chunk: true, silent: silent),
           onError: (_) {},
           cancelOnError: false,
         );
@@ -349,7 +370,7 @@ class ExecutionService {
         .transform(utf8.decoder)
         .listen(
           (chunk) {
-            _logChunk(chunk, TerminalLineType.stderr);
+            _logChunk(chunk, TerminalLineType.stderr, silent: silent);
             stderrBuffer.write(chunk.replaceAll('\r', ''));
           },
           onError: (_) {},

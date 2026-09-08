@@ -77,6 +77,29 @@ final activeProcessProvider = StateProvider<Process?>((ref) => null);
 
 final aiLoadedProvider = StateProvider<bool>((ref) => false);
 
+// ─── AI Feature State Providers ───────────────────────────────────────────────
+
+
+/// True while the AI is analyzing a compiler error via [AiService.explainError].
+final isAiAnalyzingProvider = StateProvider<bool>((ref) => false);
+
+/// The AI's structured explanation of the last compiler/runtime error.
+/// Displayed in the [AiErrorPanel] above the terminal.
+/// Null when no diagnosis is available.
+final aiDiagnosisProvider = StateProvider<String?>((ref) => null);
+
+/// The converted code produced by the Cross-Language Converter.
+/// When non-null, the home screen shows a split-screen side-by-side view.
+final convertedCodeProvider = StateProvider<String?>((ref) => null);
+
+/// The target language name currently shown in the converter split view.
+final conversionLanguageProvider = StateProvider<String?>((ref) => null);
+
+/// Controls the active tab in the bottom output panel.
+/// 0 = Terminal, 1 = AI Analysis.
+/// Automatically switched to 1 when an AI analysis is available.
+final bottomTabProvider = StateProvider<int>((ref) => 0);
+
 // ─── Terminal notifier ────────────────────────────────────────────────────────
 /// Manages terminal output lines.
 ///
@@ -185,3 +208,8 @@ final terminalProvider =
     StateNotifierProvider<TerminalNotifier, List<TerminalLine>>(
   (ref) => TerminalNotifier(),
 );
+
+// ─── Code Conversion Providers ────────────────────────────────────────────────
+final hasCompilationErrorProvider = StateProvider<bool>((ref) => false);
+final isConvertingProvider = StateProvider<bool>((ref) => false);
+final originalCodeProvider = StateProvider<String?>((ref) => null);
