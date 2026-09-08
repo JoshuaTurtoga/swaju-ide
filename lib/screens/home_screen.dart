@@ -22,6 +22,7 @@ import '../widgets/toolbar.dart';
 import '../widgets/vertical_split_view.dart';
 import '../widgets/theme_transition_overlay.dart';
 import '../widgets/ide_toast.dart';
+import '../widgets/chat_panel.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -36,6 +37,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   late AnimationController _themeAnimController;
   late Animation<double> _themeAnim;
   ThemeTransitionEvent? _lastThemeEvent;
+  double _chatPanelWidth = 350.0;
 
 
   static const _defaultCode = <ProgrammingLanguage, String>{
@@ -227,6 +229,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final theme = AppTheme.fromType(ref.watch(themeProvider));
     final selectedLang = ref.watch(selectedLanguageProvider);
     final isRunning = ref.watch(executionStateProvider) != ExecutionState.idle;
+    final isChatOpen = ref.watch(isChatPanelOpenProvider);
 
     ref.listen<ProgrammingLanguage>(selectedLanguageProvider, (prev, next) {
       if (prev != next) {
@@ -256,7 +259,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               body: Column(children: [
                 Toolbar(onRun: _runCode, onKill: _killProcess, onConvert: _openConvertDialog),
                 Expanded(
-                  child: VerticalSplitView(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        child: VerticalSplitView(
                     top: Container(
                       margin: const EdgeInsets.fromLTRB(12, 12, 12, 0),
                       decoration: theme.neumorphicInner(radius: 12),
@@ -288,7 +295,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     bottom: const TerminalPanel(),
                   ),
                 ),
-                _StatusBar(language: selectedLang),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOutCubic,
+                  width: isChatOpen ? _chatPanelWidth : 0.0,
+                  child: ClipRect(
+                    child: OverflowBox(
+                      alignment: Alignment.centerLeft,
+                      maxWidth: _chatPanelWidth,
+                      minWidth: _chatPanelWidth,
+                      child: ChatPanel(
+                        width: _chatPanelWidth,
+                        onWidthChanged: (w) => setState(() => _chatPanelWidth = w),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          _StatusBar(language: selectedLang),
               ]),
             ),
           ),
@@ -330,7 +356,7 @@ class _StatusBar extends ConsumerWidget {
         const Spacer(),
         Text('UTF-8', style: theme.uiLabel.copyWith(color: theme.textMuted, fontSize: 11)),
         const SizedBox(width: 16),
-        Text('./ACE v1.0.0', style: theme.uiLabel.copyWith(color: theme.textMuted, fontSize: 11)),
+        Text('./ACE v1.2.0', style: theme.uiLabel.copyWith(color: theme.textMuted, fontSize: 11)),
         const SizedBox(width: 16),
         Text('by jswtrtg.dev', style: theme.uiLabel.copyWith(color: theme.textMuted, fontSize: 11)),
       ]),

@@ -175,22 +175,33 @@ class Toolbar extends ConsumerWidget {
               message: aiLoaded
                   ? 'AI assistant loaded'
                   : 'AI not available — place a .gguf model in the models directory',
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.smart_toy_outlined,
-                    size: 16,
-                    color: aiLoaded ? theme.info : theme.textMuted,
+              child: MouseRegion(
+                cursor: aiLoaded ? SystemMouseCursors.click : SystemMouseCursors.basic,
+                child: GestureDetector(
+                  onTap: () {
+                    if (aiLoaded) {
+                      final isOpen = ref.read(isChatPanelOpenProvider);
+                      ref.read(isChatPanelOpenProvider.notifier).state = !isOpen;
+                    }
+                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.smart_toy_outlined,
+                        size: 16,
+                        color: aiLoaded ? theme.info : theme.textMuted,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'AI',
+                        style: theme.uiTextSmall.copyWith(
+                          color: aiLoaded ? theme.info : theme.textMuted,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 4),
-                  Text(
-                    'AI',
-                    style: theme.uiTextSmall.copyWith(
-                      color: aiLoaded ? theme.info : theme.textMuted,
-                    ),
-                  ),
-                ],
+                ),
               ),
             );
           }),

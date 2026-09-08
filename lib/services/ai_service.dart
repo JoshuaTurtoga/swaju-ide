@@ -246,6 +246,109 @@ class AiService {
     }
     return null;
   }
+
+  // --- Feature 3: Chatbot ---------------------------------------------------
+
+  http.Client? _activeChatClient;
+  bool _isChatCancelled = false;
+
+  void stopChat() {
+    _isChatCancelled = true;
+    _activeChatClient?.close();
+    _activeChatClient = null;
+  }
+
+  void clearChat() {
+    stopChat();
+    ref.read(chatMessagesProvider.notifier).state = [];
+  }
+
+  Future<void> streamChat(String prompt) async {
+    if (!_initialized) return;
+
+    // Add user message
+    final currentMsgs = ref.read(chatMessagesProvider);
+    ref.read(chatMessagesProvider.notifier).state = [
+      ...currentMsgs,
+      ChatMessage(text: prompt, role: ChatRole.user)
+    ];
+
+    // Add empty AI message (streaming)
+    ref.read(chatMessagesProvider.notifier).state = [
+      ...ref.read(chatMessagesProvider),
+      const ChatMessage(text: '', role: ChatRole.ai, isStreaming: true)
+    ];
+
+    _activeChatClient?.close();
+    _activeChatClient = null;
+    _isChatCancelled = false;
+
+    try {
+      final client = http.Client();
+      _activeChatClient = client;
+
+      // Construct messages history for /api/chat
+      final allMsgs = ref.read(chatMessagesProvider);
+      final messages = allMsgs.where((m) => !m.isStreaming && m.text.isNotEmpty).map((m) {
+        return {
+          'role': m.role == ChatRole.user ? 'user' : 'assistant',
+          'content': m.text,
+        };
+      }).toList();
+
+      final request = http.Request('POST', Uri.parse('$_ollamaUrl/api/chat'));
+      request.headers['Content-Type'] = 'application/json';
+      
+      const systemPrompt = "You are ./ACE AI Assistant, a helpful programming chatbot. "
+          "You must only answer programming-related questions and provide code in languages supported by this IDE: C, C++, C#, Java, and Python. "
+          "If the user asks a non-programming question, politely refuse. "
+          "When generating code, always use markdown code fences (e.g. ```python) so the UI can format it properly.";
+
+      messages.insert(0, {'role': 'system', 'content': systemPrompt});
+
+      request.body = jsonEncode({
+        'model': aiModelName,
+        'messages': messages,
+        'stream': true,
+      });
+
+      final response = await client.send(request);
+
+      final aiBuffer = StringBuffer();
+
+      await for (final chunk in response.stream
+          .transform(utf8.decoder)
+          .transform(const LineSplitter())) {
+        if (_isChatCancelled) break;
+        if (chunk.isEmpty) continue;
+        final data = jsonDecode(chunk) as Map<String, dynamic>;
+        final messageChunk = data['message'] as Map<String, dynamic>?;
+        final text = messageChunk?['content'] as String? ?? '';
+        if (text.isNotEmpty) {
+          aiBuffer.write(text);
+          final msgs = List<ChatMessage>.from(ref.read(chatMessagesProvider));
+          msgs[msgs.length - 1] = ChatMessage(text: aiBuffer.toString(), role: ChatRole.ai, isStreaming: true);
+          ref.read(chatMessagesProvider.notifier).state = msgs;
+        }
+      }
+
+      if (!_isChatCancelled) {
+        final msgs = List<ChatMessage>.from(ref.read(chatMessagesProvider));
+        msgs[msgs.length - 1] = ChatMessage(text: msgs.last.text, role: ChatRole.ai, isStreaming: false);
+        ref.read(chatMessagesProvider.notifier).state = msgs;
+      }
+
+    } catch (e) {
+      if (!_isChatCancelled) {
+         final msgs = List<ChatMessage>.from(ref.read(chatMessagesProvider));
+         msgs[msgs.length - 1] = ChatMessage(text: msgs.last.text + '\n[Error: $e]', role: ChatRole.ai, isStreaming: false);
+         ref.read(chatMessagesProvider.notifier).state = msgs;
+      }
+    } finally {
+      _activeChatClient?.close();
+      _activeChatClient = null;
+    }
+  }
 }
 
 final aiServiceProvider = Provider<AiService>((ref) => AiService(ref));

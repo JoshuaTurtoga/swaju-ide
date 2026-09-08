@@ -100,6 +100,41 @@ final conversionLanguageProvider = StateProvider<String?>((ref) => null);
 /// Automatically switched to 1 when an AI analysis is available.
 final bottomTabProvider = StateProvider<int>((ref) => 0);
 
+// ─── Chatbot Feature State Providers ──────────────────────────────────────────
+
+enum ChatRole { user, ai }
+
+class ChatMessage {
+  final String text;
+  final ChatRole role;
+  final bool isStreaming;
+
+  const ChatMessage({
+    required this.text,
+    required this.role,
+    this.isStreaming = false,
+  });
+
+  ChatMessage copyWith({
+    String? text,
+    ChatRole? role,
+    bool? isStreaming,
+  }) {
+    return ChatMessage(
+      text: text ?? this.text,
+      role: role ?? this.role,
+      isStreaming: isStreaming ?? this.isStreaming,
+    );
+  }
+}
+
+/// Controls the visibility of the Chatbot Side Panel.
+final isChatPanelOpenProvider = StateProvider<bool>((ref) => false);
+
+/// Stores the chat history.
+final chatMessagesProvider = StateProvider<List<ChatMessage>>((ref) => []);
+
+
 // ─── Terminal notifier ────────────────────────────────────────────────────────
 /// Manages terminal output lines.
 ///
