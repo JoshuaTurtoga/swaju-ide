@@ -184,6 +184,8 @@ class ExecutionService {
         // Console.ReadKey crashes when stdin is redirected (as it is in our IDE).
         // We transparently patch it to Console.Read() so user code runs smoothly.
         code = code.replaceAll('Console.ReadKey', 'Console.Read');
+      } else if (language == ProgrammingLanguage.c || language == ProgrammingLanguage.cpp) {
+        code = _cUnbufferSnippet + '\n' + code;
       }
 
       final normalizedWorkDir = workDir.path.replaceAll('\\', '/');
